@@ -1,173 +1,105 @@
-// --- Game State ---
-let health = 20;
-let score = 0;
-let deck = [];
-let room = [];
-let equippedWeapon = null;
-let potionUsed = false;
-let fleeUsedLastRoom = false; 
-let resolvedInRoom = 0;
-let isGameOver = false;
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600&display=swap');
 
-const SUITS = { S: '♠', C: '♣', D: '♦', H: '♥' };
-const RANKS = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
-
-function init() {
-    createDeck();
-    updateUI();
-    logMessage("The dungeon gate creaks shut. 44 cards remain.", "text-amber-400");
+body {
+    font-family: 'Inter', sans-serif;
+    background: #0f0b07;
+    background-image: radial-gradient(circle at center, #2d231e 1px, transparent 0), linear-gradient(180deg, #1c150b 0%, #0a0806 100%);
+    background-size: 4px 4px, cover;
+    min-height: 100vh;
+    color: #fef3c7;
+    overflow-x: hidden;
 }
 
-function createDeck() {
-    for (let s in SUITS) {
-        for (let r in RANKS) {
-            if ((s === 'H' || s === 'D') && ['A', 'K', 'Q', 'J'].includes(r)) continue;
-            deck.push({ suit: s, rank: r, val: RANKS[r], id: Math.random() });
-        }
-    }
-    deck.sort(() => Math.random() - 0.5);
+.game-title {
+    font-family: 'Cinzel';
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: transparent;
+    background: linear-gradient(to bottom, #fde68a, #b45309);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
 }
 
-function drawRoom() {
-    if (resolvedInRoom < 3 && room.length > 0) return;
-    const carryOver = room.find(c => !c.resolved);
-    room = carryOver ? [carryOver] : [];
-    while (room.length < 4 && deck.length > 0) {
-        room.push({ ...deck.shift(), resolved: false });
-    }
-    resolvedInRoom = 0;
-    potionUsed = false;
-    renderRoom();
-    updateUI();
+.subtitle { font-family: 'Cinzel'; letter-spacing: 0.2em; font-size: 0.75rem; color: #fde68a; text-transform: uppercase; }
+.chamber-title { font-family: 'Cinzel'; font-size: 1.5rem; color: #f59e0b; font-weight: bold; text-transform: uppercase; }
+
+.fantasy-panel {
+    background: rgba(45, 35, 28, 0.95);
+    border: 2px solid #a18b5b;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
 }
 
-function runRoom() {
-    if (fleeUsedLastRoom || resolvedInRoom > 0 || room.length === 0) return;
-    deck.push(...room);
-    room = [];
-    fleeUsedLastRoom = true;
-    logMessage("Tactical retreat! Clear the next chamber before fleeing again.", "text-red-400 font-bold");
-    drawRoom();
+.section-label {
+    font-family: 'Cinzel';
+    color: #f59e0b;
+    border-bottom: 1px solid #78350f;
+    margin-bottom: 1rem;
+    padding-bottom: 0.25rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.1em;
 }
 
-function handleInteract(idx) {
-    const card = room[idx];
-    if (card.resolved || isGameOver) return;
-    if (card.suit === 'S' || card.suit === 'C') resolveCombat(card, idx);
-    else if (card.suit === 'D') resolveWeapon(card, idx);
-    else if (card.suit === 'H') resolvePotion(card, idx);
+/* --- Card Styles --- */
+.card-slot {
+    height: 220px;
+    background: #f4e4bc;
+    background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+    border: 2px solid #2d231e;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,0,0,0.15);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
 }
 
-function resolveCombat(card, idx) {
-    let damage = card.val;
-    let logMsg = "";
-    if (equippedWeapon) {
-        if (equippedWeapon.val > card.val) {
-            damage = 0;
-            logMsg = `Slayed ${card.rank}${SUITS[card.suit]} with ${equippedWeapon.rank}♦.`;
-            equippedWeapon.val = Math.max(0, equippedWeapon.val - 1); 
-        } else {
-            damage = card.val - equippedWeapon.val;
-            logMsg = `Shielded ${equippedWeapon.val}, but took ${damage} damage.`;
-        }
-    } else {
-        logMsg = `Barehanded vs ${card.rank}. Took ${damage} damage!`;
-    }
-    applyDamage(damage);
-    score += (card.val * 10);
-    logMessage(logMsg, damage > 0 ? "text-red-500" : "text-emerald-400");
-    addToGraveyard(card);
-    finishCard(idx);
+.card-slot:hover:not(.card-resolved) {
+    transform: translateY(-10px) rotate(1deg);
+    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.6);
+    border-color: #d97706;
+    z-index: 20;
 }
 
-function resolveWeapon(card, idx) {
-    equippedWeapon = { ...card };
-    logMessage(`Found ${card.rank}♦ Steel.`, "text-sky-400");
-    finishCard(idx);
-}
+.card-resolved { filter: grayscale(100%) brightness(0.5); opacity: 0.3; transform: scale(0.9) !important; cursor: default; }
+.suit-watermark { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; opacity: 0.07; pointer-events: none; }
+.card-weapon { background-color: #e5eef5; border-color: #4a5568; }
+.card-potion { background-color: #fde2e2; border-color: #991b1b; }
 
-function resolvePotion(card, idx) {
-    if (potionUsed) logMessage("Potions don't stack in the same room.", "text-neutral-500");
-    else {
-        health = Math.min(20, health + card.val);
-        potionUsed = true;
-        logMessage(`Healed ${card.val} Vitality.`, "text-rose-400");
-    }
-    finishCard(idx);
-}
+.suit-spade, .suit-club { color: #1a1a1a; }
+.suit-diamond { color: #b45309; }
+.suit-heart { color: #be123c; }
 
-function applyDamage(d) {
-    health = Math.max(0, health - d);
-    if (health <= 0) endGame(false);
-    updateUI();
-}
+/* --- Buttons & UI --- */
+.health-bar-bg { background: #450a0a; border: 1px solid #991b1b; }
+.health-bar-fill { transition: width 0.6s ease; background: linear-gradient(90deg, #991b1b, #ef4444); }
+.stat-box { background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 0.25rem; border: 1px solid rgba(161, 139, 91, 0.3); }
+.stat-label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: rgba(245, 158, 11, 0.7); }
+.stat-value { font-family: 'Cinzel'; font-weight: bold; font-size: 1.25rem; }
 
-function finishCard(idx) {
-    room[idx].resolved = true;
-    resolvedInRoom++;
-    if (resolvedInRoom >= 3) fleeUsedLastRoom = false;
-    renderRoom();
-    updateUI();
-    if (deck.length === 0 && room.every(c => c.resolved)) endGame(true);
-}
+.resolved-badge { font-size: 10px; background: #2d1e0e; padding: 0.25rem 0.75rem; border-radius: 9999px; border: 1px solid #78350f; color: #f59e0b; font-weight: bold; }
 
-function updateUI() {
-    document.getElementById('health-bar').style.width = (health / 20 * 100) + "%";
-    document.getElementById('health-text').innerText = `${health}/20`;
-    document.getElementById('deck-count').innerText = deck.length;
-    document.getElementById('score-value').innerText = score;
-    document.getElementById('resolved-indicator').innerText = `${resolvedInRoom} / 3 Resolved`;
-    const runBtn = document.getElementById('run-btn');
-    if (fleeUsedLastRoom) {
-        runBtn.disabled = true;
-        runBtn.innerText = "Recharging...";
-    } else {
-        runBtn.disabled = resolvedInRoom > 0 || room.length === 0;
-        runBtn.innerText = "Flee Dungeon";
-    }
-    const wSlot = document.getElementById('weapon-slot');
-    wSlot.innerHTML = equippedWeapon ? 
-        `<div class="text-3xl font-bold suit-diamond font-['Cinzel']">${equippedWeapon.rank}♦</div><div class="text-[10px] font-bold text-sky-400">Power: ${equippedWeapon.val}</div>` : 
-        `<div class="text-sky-500/50 italic text-xs font-['Cinzel']">Hands are empty</div>`;
-    document.getElementById('draw-btn').disabled = (resolvedInRoom < 3 && room.length > 0) || deck.length === 0;
+.btn-game { 
+    padding: 1rem; border-radius: 0.5rem; font-weight: bold; font-family: 'Cinzel'; 
+    letter-spacing: 0.1em; transition: all 0.2s; border-width: 2px;
 }
+.btn-draw { background: #064e3b; color: #34d399; border-color: #065f46; }
+.btn-run { background: #450a0a; color: #f87171; border-color: #7f1d1d; }
+.btn-run:disabled { background: #271b1b; color: #7f1d1d; border-color: #450a0a; cursor: not-allowed; }
 
-function renderRoom() {
-    const container = document.getElementById('card-slots');
-    container.innerHTML = room.map((c, i) => `
-        <div onclick="handleInteract(${i})" class="card-slot ${c.resolved ? 'card-resolved' : ''} ${c.suit === 'D' ? 'card-weapon' : ''} ${c.suit === 'H' ? 'card-potion' : ''}">
-            <div class="flex justify-between items-start z-10">
-                <div class="text-2xl font-black font-['Cinzel'] ${c.suit==='S'||c.suit==='C'?'text-black':'text-red-700'}">${c.rank}</div>
-                <div class="text-[9px] font-bold uppercase tracking-widest text-neutral-800 opacity-60">${c.suit==='S'||c.suit==='C'?'Danger':c.suit==='D'?'Might':'Life'}</div>
-            </div>
-            <div class="suit-watermark ${c.suit==='S'||c.suit==='C'?'text-black':'text-red-700'}">${SUITS[c.suit]}</div>
-            <div class="text-center z-10"><div class="text-5xl font-['Cinzel'] font-black text-neutral-900">${c.val}</div></div>
-            <div class="text-center z-10"><span class="text-[9px] font-black uppercase bg-black/10 px-2 py-0.5 rounded text-neutral-800">${c.suit==='S'||c.suit==='C'?'Monster':c.suit==='D'?'Steel':'Ichor'}</span></div>
-        </div>
-    `).join('');
+.btn-restart {
+    width: 100%; background: linear-gradient(to right, #b45309, #d97706); color: black;
+    font-weight: 900; font-family: 'Cinzel'; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 1rem; border-radius: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
+.btn-restart:hover { background: linear-gradient(to right, #d97706, #f59e0b); transform: scale(1.02); }
 
-function logMessage(txt, color) {
-    const log = document.getElementById('game-log');
-    const entry = document.createElement('div');
-    entry.className = `${color} border-l-2 border-current pl-3 py-1 bg-black/20 rounded-r`;
-    entry.innerHTML = ` ${txt}`;
-    log.prepend(entry);
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem;
 }
-
-function addToGraveyard(card) {
-    const gy = document.getElementById('graveyard');
-    const icon = document.createElement('span');
-    icon.className = `text-lg ${card.suit==='S'||card.suit==='C'?'text-black':'text-red-700'}`;
-    icon.innerText = SUITS[card.suit];
-    gy.appendChild(icon);
-}
-
-function endGame(win) {
-    isGameOver = true;
-    document.getElementById('modal-overlay').classList.remove('hidden');
-    document.getElementById('modal-title').innerText = win ? "ASCENDED" : "EXTINGUISHED";
-    document.getElementById('modal-content').innerText = win ? `Final Score: ${score + (health*100)}` : `Your journey ends. Score: ${score}`;
-}
-
-init();
+.weapon-well { background: rgba(0,0,0,0.2); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(125, 211, 252, 0.1); }
