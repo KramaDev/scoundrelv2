@@ -21,13 +21,8 @@ body {
     filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
 }
 
-.subtitle {
-    font-family: 'Cinzel';
-    letter-spacing: 0.2em;
-    font-size: 0.75rem;
-    color: #fde68a;
-    text-transform: uppercase;
-}
+.subtitle { font-family: 'Cinzel'; letter-spacing: 0.2em; font-size: 0.75rem; color: #fde68a; text-transform: uppercase; }
+.chamber-title { font-family: 'Cinzel'; font-size: 1.5rem; color: #f59e0b; font-weight: bold; text-transform: uppercase; }
 
 .fantasy-panel {
     background: rgba(45, 35, 28, 0.95);
@@ -70,23 +65,8 @@ body {
     z-index: 20;
 }
 
-.card-resolved {
-    filter: grayscale(100%) brightness(0.5);
-    opacity: 0.3;
-    transform: scale(0.9) !important;
-    cursor: default;
-}
-
-.suit-watermark {
-    position: absolute;
-    top: 55%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 6rem;
-    opacity: 0.07;
-    pointer-events: none;
-}
-
+.card-resolved { filter: grayscale(100%) brightness(0.5); opacity: 0.3; transform: scale(0.9) !important; cursor: default; }
+.suit-watermark { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; opacity: 0.07; pointer-events: none; }
 .card-weapon { background-color: #e5eef5; border-color: #4a5568; }
 .card-potion { background-color: #fde2e2; border-color: #991b1b; }
 
@@ -94,13 +74,14 @@ body {
 .suit-diamond { color: #b45309; }
 .suit-heart { color: #be123c; }
 
-/* --- Components --- */
+/* --- Buttons & UI --- */
 .health-bar-bg { background: #450a0a; border: 1px solid #991b1b; }
 .health-bar-fill { transition: width 0.6s ease; background: linear-gradient(90deg, #991b1b, #ef4444); }
-
 .stat-box { background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 0.25rem; border: 1px solid rgba(161, 139, 91, 0.3); }
 .stat-label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: rgba(245, 158, 11, 0.7); }
 .stat-value { font-family: 'Cinzel'; font-weight: bold; font-size: 1.25rem; }
+
+.resolved-badge { font-size: 10px; background: #2d1e0e; padding: 0.25rem 0.75rem; border-radius: 9999px; border: 1px solid #78350f; color: #f59e0b; font-weight: bold; }
 
 .btn-game { 
     padding: 1rem; border-radius: 0.5rem; font-weight: bold; font-family: 'Cinzel'; 
@@ -108,12 +89,30 @@ body {
 }
 .btn-draw { background: #064e3b; color: #34d399; border-color: #065f46; }
 .btn-run { background: #450a0a; color: #f87171; border-color: #7f1d1d; }
+.btn-run:disabled { background: #271b1b; color: #7f1d1d; border-color: #450a0a; cursor: not-allowed; }
 
-.btn-run:disabled {
-    background: #271b1b; color: #7f1d1d; border-color: #450a0a; cursor: not-allowed;
+/* FIX: Restart Button Styling */
+.btn-restart {
+    width: 100%;
+    background: linear-gradient(to right, #b45309, #d97706);
+    color: black;
+    font-weight: 900;
+    font-family: 'Cinzel';
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.btn-restart:hover {
+    background: linear-gradient(to right, #d97706, #f59e0b);
+    transform: scale(1.02);
 }
 
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem;
 }
+.weapon-well { background: rgba(0,0,0,0.2); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(125, 211, 252, 0.1); }
