@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoundrel: Legend of the Cursed Deck</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="game-title">SCOUNDREL</h1>
+            <div class="flex justify-center items-center gap-4 mt-2">
+                <span class="h-px w-20 bg-amber-800"></span>
+                <p class="subtitle">Survival is the only victory</p>
+                <span class="h-px w-20 bg-amber-800"></span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-3 space-y-6">
+                <div class="fantasy-panel p-5 rounded-lg border-amber-900/50">
+                    <h2 class="section-label">Vitals</h2>
+                    <div class="mb-5">
+                        <div class="flex justify-between text-[10px] mb-1 font-bold tracking-tighter text-amber-200/50">
+                            <span>SURVIVAL CHANCE</span>
+                            <span id="health-text">20/20</span>
+                        </div>
+                        <div class="h-3 health-bar-bg rounded-full overflow-hidden">
+                            <div id="health-bar" class="health-bar-fill h-full w-full"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="stat-box">
+                            <div class="stat-label">Deck</div>
+                            <div id="deck-count" class="stat-value">44</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label text-amber-500/70">Score</div>
+                            <div id="score-value" class="stat-value text-amber-400">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fantasy-panel p-4 rounded-lg border-amber-900/50">
+                    <h2 class="section-label text-[10px]">Chronicle</h2>
+                    <div id="game-log" class="h-56 overflow-y-auto text-[11px] leading-relaxed space-y-2 font-mono text-amber-100/80 pr-2"></div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-6 space-y-6">
+                <div class="fantasy-panel p-6 rounded-xl min-h-[500px] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-8 border-b border-amber-900/30 pb-4">
+                            <h2 class="chamber-title">The Chamber</h2>
+                            <span id="resolved-indicator" class="resolved-badge">0 / 3 Resolved</span>
+                        </div>
+
+                        <div id="card-slots" class="grid grid-cols-2 gap-4">
+                            </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-8">
+                        <button id="draw-btn" onclick="drawRoom()" class="btn-game btn-draw">Next Room</button>
+                        <button id="run-btn" onclick="runRoom()" class="btn-game btn-run">Flee Dungeon</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 space-y-6">
+                <div class="fantasy-panel p-5 rounded-lg border-sky-900/50">
+                    <h2 class="section-label text-sky-400 text-center">Active Steel</h2>
+                    <div id="weapon-slot" class="weapon-well">
+                        <div class="empty-text">Hands are empty</div>
+                    </div>
+                </div>
+
+                <div class="fantasy-panel p-4 rounded-lg border-neutral-800">
+                    <h2 class="section-label text-neutral-500 text-center text-[10px]">The Graveyard</h2>
+                    <div id="graveyard" class="flex flex-wrap gap-1 justify-center opacity-40 min-h-[100px]"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="fantasy-panel max-w-md w-full p-10 rounded-2xl text-center border-amber-600 shadow-xl">
+            <h2 id="modal-title" class="modal-title"></h2>
+            <div id="modal-content" class="modal-text"></div>
+            <button onclick="location.reload()" class="btn-restart">Restart Pilgrimage</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
