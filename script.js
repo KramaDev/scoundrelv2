@@ -29,14 +29,12 @@ function createDeck() {
 }
 
 function drawRoom() {
-    // FIX: You can only draw if 3 cards were resolved (or deck is empty)
+    // Only allow drawing if 3 cards were resolved (or deck is empty)
     if (resolvedInRoom < 3 && room.length > 0 && deck.length > 0) return;
 
-    // Identify the card that was NOT played (the 4th card) to carry over
     const carryOver = room.find(c => !c.resolved);
     room = carryOver ? [carryOver] : [];
     
-    // Fill the room back to 4 cards
     while (room.length < 4 && deck.length > 0) {
         room.push({ ...deck.shift(), resolved: false });
     }
@@ -60,10 +58,11 @@ function handleInteract(idx) {
     const card = room[idx];
     if (card.resolved || isGameOver) return;
     
-    // FIX: Lock interaction if 3 cards have already been played in this room
-    // Exception: If the deck is empty, allow playing all cards to finish the game.
+    // FIX: BLOCKER ADDED HERE
+    // If the player has already played 3 cards and there are still cards in the deck,
+    // they are blocked from resolving the 4th card.
     if (resolvedInRoom >= 3 && deck.length > 0) {
-        logMessage("Room cleared! The 4th card remains. Draw the next room.", "text-amber-200 italic");
+        logMessage("Room cleared! The last card must carry over. Click 'Next Room'.", "text-amber-200 italic");
         return;
     }
 
@@ -123,14 +122,13 @@ function finishCard(idx) {
     if (resolvedInRoom >= 3) {
         fleeUsedLastRoom = false;
         if (deck.length > 0) {
-            logMessage("Chamber resolved. One card remains for the next room.", "text-amber-500 font-bold");
+            logMessage("Chamber resolved. Advance to the next room.", "text-amber-500 font-bold");
         }
     }
 
     renderRoom();
     updateUI();
 
-    // End game only if deck is empty AND all cards in current room are resolved
     if (deck.length === 0 && room.every(c => c.resolved)) endGame(true);
 }
 
@@ -155,7 +153,6 @@ function updateUI() {
         `<div class="text-3xl font-bold suit-diamond font-['Cinzel']">${equippedWeapon.rank}♦</div><div class="text-[10px] font-bold text-sky-400">Power: ${equippedWeapon.val}</div>` : 
         `<div class="text-sky-500/50 italic text-xs font-['Cinzel']">Hands are empty</div>`;
 
-    // Only allow drawing if 3 cards were played
     document.getElementById('draw-btn').disabled = (resolvedInRoom < 3 && room.length > 0 && deck.length > 0) || (deck.length === 0 && room.every(c => c.resolved));
 }
 
